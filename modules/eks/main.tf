@@ -3,28 +3,56 @@ module "eks" {
   version = "~> 21.0"
 
   name               = var.cluster_name
-  kubernetes_version = var.kubernetes_version
+  kubernetes_version = "1.34"
 
+  
 
-  # Optional
-  endpoint_public_access = true
-
-  # Optional: Adds the current caller identity as an administrator via cluster access entry
-  enable_cluster_creator_admin_permissions = true
-
-  compute_config = {
-    enabled    = true
-    node_pools = ["general-purpose"]
+  # EKS Addons
+  addons = {
+    coredns = {}
+    eks-pod-identity-agent = {
+      before_compute = true
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      before_compute = true
+    }
   }
 
   vpc_id     = var.vpc_id
   subnet_ids = var.subnet_ids
+  enable_cluster_creator_admin_permissions = true
 
-  tags = {
-    Environment = "dev"
-    Terraform   = "true"
+  eks_managed_node_groups = {
+    example = {
+      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
+      instance_types = ["c7i-flex.large"]
+      ami_type       = "AL2023_x86_64_STANDARD"
+
+      min_size = 1
+      max_size = 3
+      # This value is ignored after the initial creation
+      # https://github.com/bryantbiggs/eks-desired-size-hack
+      desired_size = 2
+
+      # This is not required - demonstrates how to pass additional configuration to nodeadm
+      # Ref https://awslabs.github.io/amazon-eks-ami/nodeadm/doc/api/
+      cloudinit_pre_nodeadm = [
+        {
+          content_type = "application/node.eks.aws"
+          content      = <<-EOT
+            ---
+            apiVersion: node.eks.aws/v1alpha1
+            kind: NodeConfig
+            spec:
+              kubelet:
+                config:
+                  shutdownGracePeriod: 30s
+          EOT
+        }
+      ]
+    }
   }
 
-
-
 }
+

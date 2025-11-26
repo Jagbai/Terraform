@@ -14,16 +14,6 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "private_subnets" {
-  description = "Private subnet CIDR blocks"
-  type        = list(string)
-}
-
-variable "public_subnets" {
-  description = "Public subnet CIDR blocks"
-  type        = list(string)
-}
-
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
@@ -37,6 +27,5 @@ variable "kubernetes_version" {
 variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string
-  default     = "us-east-1"
   
 }
