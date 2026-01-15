@@ -24,3 +24,10 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids
 }
+
+module "ec2" {
+  source = "../../modules/ec2"
+
+  subnet_id     = module.vpc.public_subnet_ids[0]
+  instance_type = "t3.micro"
+}
